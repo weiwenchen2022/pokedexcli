@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"pokedexcli/internal/pokeapi"
+	"github.com/weiwenchen2022/pokedexcli/internal/pokeapi"
 
 	"github.com/chzyer/readline"
 )

@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"pokedexcli/internal/pokecache"
+	"github.com/weiwenchen2022/pokedexcli/internal/pokecache"
 )
 
 type Pokedex map[string]Pokemon

@@ -1,4 +1,4 @@
-module pokedexcli
+module github.com/weiwenchen2022/pokedexcli
 
 go 1.20
 
