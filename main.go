@@ -1,14 +1,18 @@
 package main
 
 import (
-	"bufio"
+	"errors"
+	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
 	"time"
 
 	"pokedexcli/internal/pokeapi"
+
+	"github.com/chzyer/readline"
 )
 
 type callbackFunc func(string) error
@@ -24,6 +28,8 @@ func (c *cliCommand) String() string {
 }
 
 const cacheInterval = 5 * time.Second
+
+var pokedexFile = flag.String("file", "pokedex.json", "pokedex file")
 
 var commands map[string]cliCommand
 var config *pokeapi.Config
@@ -81,12 +87,39 @@ func init() {
 }
 
 func main() {
-	sc := bufio.NewScanner(os.Stdin)
+	flag.Parse()
 
-	fmt.Print("Pokedex > ")
+	if err := config.Load(*pokedexFile); err != nil {
+		log.Fatal(err)
+	}
 
-	for sc.Scan() {
-		fields := strings.Fields(sc.Text())
+	conf := &readline.Config{
+		Prompt:      "Pokedex > ",
+		HistoryFile: "pokedexcli.session",
+	}
+	if err := conf.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	rl, err := readline.NewEx(conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rl.Close()
+
+	// sc := bufio.NewScanner(os.Stdin)
+	// fmt.Print("Pokedex > ")
+
+	for {
+		// for sc.Scan() {
+		line, err := rl.Readline()
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		}
+
+		fields := strings.Fields(line)
 		cmd := fields[0]
 		var arg string
 		if len(fields) > 1 {
@@ -102,7 +135,7 @@ func main() {
 			}
 		}
 
-		fmt.Print("Pokedex > ")
+		// fmt.Print("Pokedex > ")
 	}
 }
 
@@ -121,6 +154,10 @@ func commandHelp(_ string) error {
 }
 
 func commandExit(_ string) error {
+	if err := config.Save(*pokedexFile); err != nil {
+		log.Fatal(err)
+	}
+
 	os.Exit(0)
 	return nil
 }
