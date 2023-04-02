@@ -12,7 +12,7 @@ func Next(c *Config) ([]string, error) {
 		return nil, errors.New("no next location areas")
 	}
 
-	return locations(c, c.next)
+	return locationArea(c, c.next)
 }
 
 func Previous(c *Config) ([]string, error) {
@@ -20,10 +20,10 @@ func Previous(c *Config) ([]string, error) {
 		return nil, errors.New("no invoke map command twice before")
 	}
 
-	return locations(c, c.previous)
+	return locationArea(c, c.previous)
 }
 
-func locations(c *Config, endpoint string) ([]string, error) {
+func locationArea(c *Config, endpoint string) ([]string, error) {
 	l, err := Resource(c, endpoint)
 	if err != nil {
 		return nil, err
