@@ -3,16 +3,15 @@ package pokeapi
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"math/rand"
-	"net/http"
 	"os"
 	"time"
 
+	"github.com/weiwenchen2022/pokedexcli/internal/pokeapi/structs"
 	"github.com/weiwenchen2022/pokedexcli/internal/pokecache"
 )
 
-type Pokedex map[string]Pokemon
+type Pokedex map[string]structs.Pokemon
 
 type Config struct {
 	next     string
@@ -72,28 +71,4 @@ func (c *Config) Save(filepath string) error {
 	}
 
 	return nil
-}
-
-func makeRequest(c *Config, endpoint string) ([]byte, error) {
-	if body, ok := c.cache.Get(endpoint); ok {
-		return body, nil
-	}
-
-	resp, err := http.Get(endpoint)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	c.cache.Add(endpoint, body)
-	return body, nil
-}
-
-func parseResponse(r io.Reader, v any) error {
-	return json.NewDecoder(r).Decode(v)
 }

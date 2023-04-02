@@ -1,21 +1,11 @@
 package pokeapi
 
 import (
-	"bytes"
 	"errors"
+	"strings"
 )
 
-type pokeAPIAreaResponse struct {
-	Count    int `json:"count"`
-	Next     any `json:"next"`
-	Previous any `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
-const locationAreaEndpoint = "https://pokeapi.co/api/v2/location-area/"
+const locationAreaEndpoint = "location-area/"
 
 func Next(c *Config) ([]string, error) {
 	if c.next == "" {
@@ -34,30 +24,26 @@ func Previous(c *Config) ([]string, error) {
 }
 
 func locations(c *Config, endpoint string) ([]string, error) {
-	body, err := makeRequest(c, endpoint)
+	l, err := Resource(c, endpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	var response pokeAPIAreaResponse
-	err = parseResponse(bytes.NewReader(body), &response)
-	if err != nil {
-		return nil, err
-	}
-
-	names := make([]string, len(response.Results))
+	names := make([]string, len(l.Results))
 	for i := range names {
-		names[i] = response.Results[i].Name
+		names[i] = l.Results[i].Name
 	}
 
-	if next, ok := response.Next.(string); ok {
-		c.next = next
+	if next, ok := l.Next.(string); ok {
+		index := strings.Index(next, locationAreaEndpoint) + len(locationAreaEndpoint)
+		c.next = locationAreaEndpoint + next[index:]
 	} else {
 		c.next = ""
 	}
 
-	if previous, ok := response.Previous.(string); ok {
-		c.previous = previous
+	if previous, ok := l.Previous.(string); ok {
+		index := strings.Index(previous, locationAreaEndpoint) + len(locationAreaEndpoint)
+		c.previous = locationAreaEndpoint + previous[index:]
 	} else {
 		c.previous = ""
 	}
